@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -35,9 +34,7 @@ func TestAddGetDelete(t *testing.T) {
 	// prepare
 
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		fmt.Println(err)
-	}
+	require.NoError(t, err)
 
 	defer db.Close()
 
@@ -68,16 +65,14 @@ func TestAddGetDelete(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = store.Get(parcel.Number)
-	require.ErrorIs(t, sql.ErrNoRows, err)
+	assert.ErrorIs(t, sql.ErrNoRows, err)
 }
 
 // TestSetAddress проверяет обновление адреса
 func TestSetAddress(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
-	if err != nil {
-		fmt.Println(err)
-	}
+	require.NoError(t, err)
 
 	defer db.Close()
 
@@ -106,9 +101,7 @@ func TestSetAddress(t *testing.T) {
 func TestSetStatus(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
-	if err != nil {
-		fmt.Println(err)
-	}
+	require.NoError(t, err)
 
 	defer db.Close()
 
@@ -142,9 +135,7 @@ func TestSetStatus(t *testing.T) {
 func TestGetByClient(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
-	if err != nil {
-		fmt.Println(err)
-	}
+	require.NoError(t, err)
 
 	defer db.Close()
 
@@ -180,15 +171,8 @@ func TestGetByClient(t *testing.T) {
 	// убедитесь в отсутствии ошибки
 	// убедитесь, что количество полученных посылок совпадает с количеством добавленных
 	require.NoError(t, err)
-	require.Equal(t, len(storedParcels), len(parcels))
+	assert.Len(t, storedParcels, len(parcels))
 
 	// check
-	for _, parcel := range storedParcels {
-		// в parcelMap лежат добавленные посылки, ключ - идентификатор посылки, значение - сама посылка
-		// убедитесь, что все посылки из storedParcels есть в parcelMap
-		// убедитесь, что значения полей полученных посылок заполнены верно
-		_, ok := parcelMap[parcel.Number]
-		require.True(t, ok)
-		assert.Equal(t, parcelMap[parcel.Number], parcel)
-	}
+	require.ElementsMatch(t, parcels, storedParcels)
 }
